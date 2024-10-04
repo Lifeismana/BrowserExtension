@@ -158,7 +158,6 @@ function FetchSteamUserData( callback )
 		} ).then( ( response ) => response.json() )
 			.then( ( response ) =>
 			{
-				console.log( 'Web API Response', response );
 				if( !response || !response.success || !response.data || !response.data.webapi_token )
 				{
 					throw new Error( 'Are you logged on the Steam Store in this browser?' );
@@ -168,10 +167,11 @@ function FetchSteamUserData( callback )
 
 				if( accessToken )
 				{
-					console.log( 'Web API Token', accessToken );
+					const paramsGroupId = new URLSearchParams();
+					paramsGroupId.set( 'access_token', accessToken );
 					// we're not respecting the spec by doing this but i'm crossing my fingers that it won't cause a problem at some point in time
 					const steamid = ( JSON.parse( atob( accessToken.split( '.' )[ 1 ] ) ).sub );
-					fetch( `https://api.steampowered.com/IFamilyGroupsService/GetFamilyGroupForUser/v1/?access_token=${accessToken}`, {
+					fetch( `https://api.steampowered.com/IFamilyGroupsService/GetFamilyGroupForUser/v1/?${paramsGroupId.toString()}`, {
 						headers: {
 							Accept: 'application/json',
 						},
@@ -187,8 +187,15 @@ function FetchSteamUserData( callback )
 						} )
 						.then( ( family_groupid ) =>
 						{
+							const paramsSharedLibrary = new URLSearchParams();
+							paramsSharedLibrary.set( 'access_token', accessToken );
+							paramsSharedLibrary.set( 'include_free', 'true' );
+							paramsSharedLibrary.set( 'family_groupid', family_groupid );
+							paramsSharedLibrary.set( 'include_own', 'true' );
+							paramsSharedLibrary.set( 'include_non_games', 'true' );
+							paramsSharedLibrary.set( 'steamid', steamid );
 							// the include_own param has no link with its name, if set at false, it returns only your owned apps, if set at true, it returns your owned apps and the apps from your family
-							fetch( `https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?access_token=${accessToken}&include_free=true&family_groupid=${family_groupid}&include_own=true&include_non_games=true&steamid=${steamid}`, {
+							fetch( `https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?${paramsSharedLibrary.toString()}`, {
 								headers: {
 									Accept: 'application/json',
 								}
