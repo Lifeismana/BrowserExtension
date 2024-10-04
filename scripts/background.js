@@ -149,6 +149,72 @@ function FetchSteamUserData( callback )
 					callback( response );
 				} );
 			} );
+
+		fetch( `https://store.steampowered.com/pointssummary/ajaxgetasyncconfig`, {
+			credentials: 'include',
+			headers: {
+				Accept: 'application/json',
+			},
+		} ).then( ( response ) => response.json() )
+			.then( ( response ) =>
+			{
+				console.log( 'Web API Response', response );
+				if( !response || !response.success || !response.data || !response.data.webapi_token )
+				{
+					throw new Error( 'Are you logged on the Steam Store in this browser?' );
+				}
+
+				const accessToken = response.data.webapi_token;
+
+				if( accessToken )
+				{
+					console.log( 'Web API Token', accessToken );
+					// we're not respecting the spec by doing this but i'm crossing my fingers that it won't cause a problem at some point in time
+					const steamid = ( JSON.parse( atob( accessToken.split( '.' )[ 1 ] ) ).sub );
+					fetch( `https://api.steampowered.com/IFamilyGroupsService/GetFamilyGroupForUser/v1/?access_token=${accessToken}`, {
+						headers: {
+							Accept: 'application/json',
+						},
+					} ).then( ( response ) =>  response.json() )
+						.then( ( response ) =>
+						{
+							if( !response || response.response.is_not_member_of_any_group || !response.response.family_groupid )
+							{
+								throw new Error( 'Are you not in a family group?' );
+							}
+
+							return response.response.family_groupid ;
+						} )
+						.then( ( family_groupid ) =>
+						{
+							// the include_own param has no link with its name, if set at false, it returns only your owned apps, if set at true, it returns your owned apps and the apps from your family
+							fetch( `https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?access_token=${accessToken}&include_free=true&family_groupid=${family_groupid}&include_own=true&include_non_games=true&steamid=${steamid}`, {
+								headers: {
+									Accept: 'application/json',
+								}
+							} ).then( ( response ) => response.json() )
+								.then( ( response ) =>
+								{
+									if( !response || !response.response || !response.response.apps )
+									{
+										throw new Error( 'Is Steam okay?' );
+									}
+									const reduced = response.response.apps.reduce( ( data, app ) =>
+									{
+										if( !app.owner_steamids.includes( steamid ) )
+										{
+											data.push( {
+												appid: app.appid,
+												owner_steamids: app.owner_steamids,
+											} );
+										}
+										return data;
+									}, [] );
+									console.log( 'Shared Library', reduced );
+								} );
+						} );
+				}
+			} );
 	} );
 }
 
