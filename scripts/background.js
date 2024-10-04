@@ -3,6 +3,7 @@
 let storeSessionId;
 let checkoutSessionId;
 let userDataCache = null;
+let userFamilyDataCache = null;
 let nextAllowedRequest = 0;
 
 /** @type {browser} ExtensionApi */
@@ -46,6 +47,7 @@ ExtensionApi.runtime.onMessage.addListener( ( request, sender, callback ) =>
 	{
 		case 'InvalidateCache': InvalidateCache(); callback(); return true;
 		case 'FetchSteamUserData': FetchSteamUserData( callback ); return true;
+		case 'FetchSteamUserFamilyData': FetchSteamUserFamilyData( callback ); return true;
 		case 'GetApp': GetApp( request.appid, callback ); return true;
 		case 'GetAppPrice': GetAppPrice( request, callback ); return true;
 		case 'GetAchievementsGroups': GetAchievementsGroups( request.appid, callback ); return true;
@@ -64,11 +66,21 @@ ExtensionApi.runtime.onMessage.addListener( ( request, sender, callback ) =>
 	return false;
 } );
 
-function InvalidateCache()
+function InvalidateCache( target = null )
 {
-	userDataCache = null;
+	if( target === null || target === 'userdata' )
+	{
+		userDataCache = null;
 
-	SetLocalOption( 'userdata.cached', Date.now() );
+		SetLocalOption( 'userdata.cached', Date.now() );
+	}
+
+	if( target === null || target === 'userfamilydata' )
+	{
+		userFamilyDataCache = null;
+
+		SetLocalOption( 'userfamilydata.cached', Date.now() );
+	}
 }
 
 function FetchSteamUserData( callback )
@@ -149,6 +161,26 @@ function FetchSteamUserData( callback )
 					callback( response );
 				} );
 			} );
+	} );
+}
+
+function FetchSteamUserFamilyData( callback )
+{
+	if( userFamilyDataCache !== null )
+	{
+		callback( { data: userFamilyDataCache } );
+		return;
+	}
+	GetLocalOption( { 'userfamilydata.cached': Date.now() }, ( data ) =>
+	{
+		const now = Date.now();
+		let cache = data[ 'userfamilydata.cached' ];
+
+		if( now > cache + 3600000 )
+		{
+			SetLocalOption( 'userfamilydata.cached', now );
+			cache = now;
+		}
 
 		fetch( `https://store.steampowered.com/pointssummary/ajaxgetasyncconfig`, {
 			credentials: 'include',
@@ -218,9 +250,35 @@ function FetchSteamUserData( callback )
 										return data;
 									}, [] );
 									console.log( 'Shared Library', reduced );
+									userFamilyDataCache =
+										{
+											rgFamilySharedApps: reduced,
+										};
+
+									callback( { data: userFamilyDataCache } );
+
+									SetLocalOption( 'userfamilydata.stored', JSON.stringify( userFamilyDataCache ) );
 								} );
 						} );
 				}
+			} ).catch( ( error ) =>
+			{
+				InvalidateCache( 'userfamilydata' );
+
+				GetLocalOption( { 'userfamilydata.stored': false }, ( data ) =>
+				{
+					const response =
+						{
+							error: error.message,
+						};
+
+					if( data[ 'userfamilydata.stored' ] )
+					{
+						response.data = JSON.parse( data[ 'userfamilydata.stored' ] );
+					}
+
+					callback( response );
+				} );
 			} );
 	} );
 }
