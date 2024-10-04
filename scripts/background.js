@@ -242,13 +242,10 @@ function FetchSteamUserFamilyData( callback )
 									{
 										if( !app.owner_steamids.includes( steamid ) )
 										{
-											data.push( {
-												appid: app.appid,
-												owner_steamids: app.owner_steamids,
-											} );
+											data[ app.appid ] = app.owner_steamids;
 										}
 										return data;
-									}, [] );
+									}, {} );
 									console.log( 'Shared Library', reduced );
 									userFamilyDataCache =
 										{
