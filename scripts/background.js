@@ -201,8 +201,6 @@ function FetchSteamUserFamilyData( callback )
 				{
 					const paramsGroupId = new URLSearchParams();
 					paramsGroupId.set( 'access_token', accessToken );
-					// we're not respecting the spec by doing this but i'm crossing my fingers that it won't cause a problem at some point in time
-					const steamid = ( JSON.parse( atob( accessToken.split( '.' )[ 1 ] ) ).sub );
 					fetch( `https://api.steampowered.com/IFamilyGroupsService/GetFamilyGroupForUser/v1/?${paramsGroupId.toString()}`, {
 						headers: {
 							Accept: 'application/json',
@@ -225,7 +223,8 @@ function FetchSteamUserFamilyData( callback )
 							paramsSharedLibrary.set( 'family_groupid', family_groupid );
 							paramsSharedLibrary.set( 'include_own', 'true' );
 							paramsSharedLibrary.set( 'include_non_games', 'true' );
-							paramsSharedLibrary.set( 'steamid', steamid );
+							// we're not respecting the spec by doing this but i'm crossing my fingers that it won't cause a problem at some point in time
+							paramsSharedLibrary.set( 'steamid', ( JSON.parse( atob( accessToken.split( '.' )[ 1 ] ) ).sub ) );
 							// the include_own param has no link with its name, if set at false, it returns only your owned apps, if set at true, it returns your owned apps and the apps from your family
 							fetch( `https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?${paramsSharedLibrary.toString()}`, {
 								headers: {
@@ -240,7 +239,7 @@ function FetchSteamUserFamilyData( callback )
 									}
 									const reduced = response.response.apps.reduce( ( data, app ) =>
 									{
-										if( !app.owner_steamids.includes( steamid ) )
+										if( !app.owner_steamids.includes( response.response.owner_steamid ) )
 										{
 											data[ app.appid ] = app.owner_steamids;
 										}

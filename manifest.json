@@ -60,7 +60,8 @@
 				"scripts/store/account_licenses_injected.js",
 				"scripts/store/invalidate_cache_injected.js",
 				"scripts/store/registerkey_injected.js",
-				"scripts/store/subscriptions.js"
+				"scripts/store/subscriptions.js",
+				"scripts/store/family_shared_injected.js"
 			],
 			"matches":
 			[
@@ -545,6 +546,21 @@
 			[
 				"scripts/common.js",
 				"scripts/community/market_ssa.js"
+			]
+		},
+		{
+			"run_at": "document_end",
+			"matches":
+			[
+				"https://store.steampowered.com/*"
+			],
+			"js":
+			[
+				"scripts/store/family_shared.js"
+			],
+			"css":
+			[
+				"styles/family_share.css"
 			]
 		}
 	]
