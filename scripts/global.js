@@ -85,7 +85,14 @@ else
 		{
 			if( response.error )
 			{
-				WriteLog( 'Failed to load userFamilydata', response.error );
+				if( response.error === 'You are not part of any family group.' )
+				{
+					WriteLog( response.error );
+				}
+				else
+				{
+					WriteLog( 'Failed to load userFamilydata', response.error );
+				}
 			}
 
 			if( response.data )

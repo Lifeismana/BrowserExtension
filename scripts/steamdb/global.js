@@ -111,18 +111,25 @@ GetOption( { 'steamdb-highlight': true }, ( items ) =>
 		contentScriptQuery: 'FetchSteamUserFamilyData',
 	}, ( response ) =>
 	{
-		//! doing the same as abobe makes no sense
 		const OnPageLoaded = () =>
 		{
 			if( response.error )
 			{
-				WriteLog( 'Failed to load userdata', response.error );
+				if( response.error === 'You are not part of any family group.' )
+				{
+					WriteLog( response.error );
+				}
+				else
+				{
+					WriteLog( 'Failed to load family userdata', response.error );
 
-				window.postMessage( {
-					version: EXTENSION_INTEROP_VERSION,
-					type: 'steamdb:extension-error',
-					error: `Failed to load your games. ${response.error}`,
-				}, GetHomepage() );
+					window.postMessage( {
+						version: EXTENSION_INTEROP_VERSION,
+						type: 'steamdb:extension-error',
+						error: `Failed to load your family games. ${response.error}`,
+					}, GetHomepage() );
+				}
+
 			}
 
 			if( response.data )
@@ -133,7 +140,7 @@ GetOption( { 'steamdb-highlight': true }, ( items ) =>
 					data: response.data,
 				}, GetHomepage() );
 
-				WriteLog( 'UserFamilydata loaded', `Packages: ${response.data.rgFamilySharedApps.length}` );
+				WriteLog( 'UserFamilydata loaded', `Apps: ${response.data.rgFamilySharedApps.length}` );
 			}
 		};
 

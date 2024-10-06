@@ -208,9 +208,13 @@ function FetchSteamUserFamilyData( callback )
 					} ).then( ( response ) =>  response.json() )
 						.then( ( response ) =>
 						{
-							if( !response || response.response.is_not_member_of_any_group || !response.response.family_groupid )
+							if( !response || !response.response )
 							{
-								throw new Error( 'Are you not in a family group?' );
+								throw new Error( 'Is Steam okay?' );
+							}
+							else if( response.response.is_not_member_of_any_group || !response.response.family_groupid )
+							{
+								throw new Error( 'You are not part of a family group.' );
 							}
 
 							return response.response.family_groupid ;
