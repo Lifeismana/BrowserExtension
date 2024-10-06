@@ -223,8 +223,6 @@ function FetchSteamUserFamilyData( callback )
 							paramsSharedLibrary.set( 'family_groupid', family_groupid );
 							paramsSharedLibrary.set( 'include_own', 'true' );
 							paramsSharedLibrary.set( 'include_non_games', 'true' );
-							// we're not respecting the spec by doing this but i'm crossing my fingers that it won't cause a problem at some point in time
-							paramsSharedLibrary.set( 'steamid', ( JSON.parse( atob( accessToken.split( '.' )[ 1 ] ) ).sub ) );
 							// the include_own param has no link with its name, if set at false, it returns only your owned apps, if set at true, it returns your owned apps and the apps from your family
 							fetch( `https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?${paramsSharedLibrary.toString()}`, {
 								headers: {
