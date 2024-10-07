@@ -118,5 +118,34 @@
 			window.HandleFamilyOwned();
 		}
 	} );
+
+	// this doesn't detect "Show More" changes but the only sane solution would require webrequest permissions which is not something that i'm a fan of
+	if( document.querySelector( '.react_landing_background' ) )
+	{
+		// https://stackoverflow.com/questions/3522090/event-when-window-location-href-changes
+		// modified with a weird debounce that fires on the first call & 5000ms after the last call
+		let oldHref = document.location.href;
+		let timer;
+		const body = document.querySelector( 'body' );
+		const observer = new MutationObserver( mutations =>
+		{
+			if( oldHref !== document.location.href )
+			{
+				oldHref = document.location.href;
+				if( !timer )
+				{
+					setTimeout( window.HandleFamilyOwned, 500 );
+				}
+				clearTimeout( timer );
+				timer = setTimeout( () =>
+				{
+					window.HandleFamilyOwned();
+					timer = null;
+				}, 5000 );
+			}
+		}
+		);
+		observer.observe( body, { childList: true, subtree: true } );
+	}
 } )() );
 
