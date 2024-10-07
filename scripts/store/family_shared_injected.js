@@ -91,7 +91,7 @@
 		[ ...document.getElementsByTagName( 'a' ) ].forEach(
 			( link ) =>
 			{
-				if( link.classList.contains( 'ds_no_flags' ) || link.classList.contains( 'ds_owned' ) )
+				if( link.classList.contains( 'ds_no_flags' ) || link.classList.contains( 'ds_owned' ) || link.classList.contains( 'ds_wishlist' ) )
 				{
 					return;
 				}
@@ -120,7 +120,6 @@
 	{
 		if( request?.data && request.data.type === 'steamdb:user-family-data-processed' )
 		{
-			console.log( 'Updating user family display' );
 			steamdb_familyOwned = request?.data.data;
 			window.HandleFamilyOwned();
 		}
@@ -140,7 +139,6 @@
 			clearTimeout( timer );
 			timer = setTimeout( () =>
 			{
-				console.log( 'debounce timeout' );
 				window.HandleFamilyOwned();
 				timer = null;
 			}, 5000 );
