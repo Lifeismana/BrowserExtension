@@ -77,38 +77,46 @@ else
 		popup.appendChild( optionsLink );
 	}
 
-	SendMessageToBackgroundScript( {
-		contentScriptQuery: 'FetchSteamUserFamilyData',
-	}, ( response ) =>
+	GetOption( { 'options_steam_family_flag': true }, ( items ) =>
 	{
-		const OnPageLoaded = () =>
+		if( !items.options_steam_family_flag )
 		{
-			if( response.error )
-			{
-				if( response.error === 'You are not part of any family group.' )
-				{
-					WriteLog( response.error );
-				}
-				else
-				{
-					WriteLog( 'Failed to load userFamilydata', response.error );
-				}
-			}
-
-			if( response.data )
-			{
-				WriteLog( 'UserFamilydata loaded', `Apps: ${Object.keys( response.data.rgFamilySharedApps ).length}` );
-				window.postMessage( { type: 'steamdb:user-family-data-processed', data: response.data } );
-			}
-		};
-
-		if( document.readyState === 'loading' )
-		{
-			document.addEventListener( 'DOMContentLoaded', OnPageLoaded, { once: true } );
+			return;
 		}
-		else
+
+		SendMessageToBackgroundScript( {
+			contentScriptQuery: 'FetchSteamUserFamilyData',
+		}, ( response ) =>
 		{
-			OnPageLoaded();
-		}
+			const OnPageLoaded = () =>
+			{
+				if( response.error )
+				{
+					if( response.error === 'You are not part of any family group.' )
+					{
+						WriteLog( response.error );
+					}
+					else
+					{
+						WriteLog( 'Failed to load userFamilydata', response.error );
+					}
+				}
+
+				if( response.data )
+				{
+					WriteLog( 'UserFamilydata loaded', `Apps: ${Object.keys( response.data.rgFamilySharedApps ).length}` );
+					window.postMessage( { type: 'steamdb:user-family-data-processed', data: response.data } );
+				}
+			};
+
+			if( document.readyState === 'loading' )
+			{
+				document.addEventListener( 'DOMContentLoaded', OnPageLoaded, { once: true } );
+			}
+			else
+			{
+				OnPageLoaded();
+			}
+		} );
 	} );
 }

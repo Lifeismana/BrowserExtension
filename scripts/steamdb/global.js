@@ -107,6 +107,7 @@ GetOption( { 'steamdb-highlight': true }, ( items ) =>
 		}
 	} );
 
+	// Maybe it should be its own option?
 	SendMessageToBackgroundScript( {
 		contentScriptQuery: 'FetchSteamUserFamilyData',
 	}, ( response ) =>
