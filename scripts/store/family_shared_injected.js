@@ -126,33 +126,48 @@
 		}
 	} );
 
-	// this doesn't detect "Show More" changes but the only sane solution would require webrequest permissions which is not something that i'm a fan of
 	if( document.querySelector( '.react_landing_background' ) )
 	{
 		// https://stackoverflow.com/questions/3522090/event-when-window-location-href-changes
 		// modified with a weird debounce that fires on the first call & 5000ms after the last call
-		let oldHref = document.location.href;
 		let timer;
+		const handleDebounced = () =>
+		{
+			if( !timer )
+			{
+				setTimeout( window.HandleFamilyOwned, 500 );
+			}
+			clearTimeout( timer );
+			timer = setTimeout( () =>
+			{
+				console.log( 'debounce timeout' );
+				window.HandleFamilyOwned();
+				timer = null;
+			}, 5000 );
+		};
+
+		let oldHref = document.location.href;
 		const body = document.querySelector( 'body' );
 		const observer = new MutationObserver( mutations =>
 		{
 			if( oldHref !== document.location.href )
 			{
 				oldHref = document.location.href;
-				if( !timer )
-				{
-					setTimeout( window.HandleFamilyOwned, 500 );
-				}
-				clearTimeout( timer );
-				timer = setTimeout( () =>
-				{
-					window.HandleFamilyOwned();
-					timer = null;
-				}, 5000 );
+				handleDebounced();
 			}
 		}
 		);
 		observer.observe( body, { childList: true, subtree: true } );
+
+		// look for button clicks (Show More)
+		document.addEventListener( 'click', ( e ) =>
+		{
+			if( e?.target?.tagName !== 'BUTTON' )
+			{
+				return;
+			}
+			handleDebounced();
+		} );
 	}
 } )() );
 
