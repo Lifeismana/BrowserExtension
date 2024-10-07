@@ -27,6 +27,11 @@
 					{
 						return;
 					}
+					// this isn't a react element (search on react page)
+					if( link.getAttribute( 'data-ds-appid' ) )
+					{
+						return;
+					}
 					if( !link.getElementsByTagName( 'img' )?.length )
 					{
 						return;
