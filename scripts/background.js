@@ -247,7 +247,6 @@ function FetchSteamUserFamilyData( callback )
 										}
 										return data;
 									}, {} );
-									console.log( 'Shared Library', reduced );
 									userFamilyDataCache =
 										{
 											rgFamilySharedApps: reduced,
