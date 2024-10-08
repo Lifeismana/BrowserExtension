@@ -160,7 +160,7 @@
 		// look for button clicks (Show More)
 		document.addEventListener( 'click', ( e ) =>
 		{
-			if( e?.target?.tagName !== 'BUTTON' )
+			if( !e?.target?.closest( 'button' ) )
 			{
 				return;
 			}
