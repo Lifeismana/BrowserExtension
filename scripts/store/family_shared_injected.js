@@ -96,7 +96,7 @@
 					return;
 				}
 				// we don't need to remove anything when bForceRecalculate is true since base DecorateDynamicItems already does
-				if( link.getAttribute( 'data-ds-appid' ) && steamdb_familyOwned?.rgFamilySharedApps [ link.getAttribute( 'data-ds-appid' ) ] )
+				if( link.getAttribute( 'data-ds-appid' ) && steamdb_familyOwned?.rgFamilySharedApps.includes( Number(link.getAttribute( 'data-ds-appid' ) )) )
 				{
 					link.classList.add( 'ds_flagged' , 'ds_owned' );
 					const element = document.createElement( 'div' );
